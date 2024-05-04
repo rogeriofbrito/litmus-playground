@@ -58,7 +58,7 @@ helm install chaos litmuschaos/litmus --namespace=litmus \
 --set mongodb.image.tag=6.0.5
 ```
 
-In case of others CPUs, you chan use the default Mongo DB image:
+In case of others CPUs, you can use the default Mongo DB image:
 
 ```bash
 helm install chaos litmuschaos/litmus --namespace=litmus \
