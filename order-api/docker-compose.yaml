@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  postgres_order_api:
+    image: postgres:alpine3.19
+    environment:
+      POSTGRES_PASSWORD: orderapi
+      POSTGRES_USER: orderapi
+      POSTGRES_DB: orderapi
+    ports:
+      - 5432:5432

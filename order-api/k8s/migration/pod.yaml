@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liquibase-order-api-pod
+  namespace: postgres
+spec:
+  restartPolicy: OnFailure
+  containers:
+    - name: liquibase-order-api
+      image: ${REGISTRY}/${IMAGE}:${TAG}
+      args:
+        - --url=jdbc:postgresql://postgres-order-api:5432/orderapi?currentSchema=public 
+        - --changeLogFile=./changelog/changelog.yaml
+        - --username=orderapi 
+        - --password=orderapi
+        - update

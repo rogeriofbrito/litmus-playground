@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: rogeriofbrito
+      sqlFile:
+        path: sql/V001_initial.sql
+        relativeToChangelogFile: true
+      rollback:
+        path: sql/U001_initial.sql
+        relativeToChangelogFile: true

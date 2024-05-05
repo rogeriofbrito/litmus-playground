@@ -78,3 +78,15 @@ kubectl port-forward --namespace litmus service/chaos-litmus-frontend-service 81
 2. Create a Chaos Environment with name `env`
 
 3. Create a Chaos Environment with name `infrastructure`
+
+## Install order-api database
+
+```bash
+make order-api-k8s-postgres
+```
+
+## Run order-api migration
+
+```bash
+make order-api-liquibase
+```

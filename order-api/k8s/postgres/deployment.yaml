@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-order-api-deployment
+  namespace: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-order-api
+  template:
+    metadata:
+      labels:
+        app: postgres-order-api
+    spec:
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-order-api-storage
+              mountPath: /var/lib/postgresql/data
+          env:
+            - name: POSTGRES_PASSWORD
+              value: orderapi
+            - name: POSTGRES_USER
+              value: orderapi
+            - name: POSTGRES_DB
+              value: orderapi
+      volumes:
+        - name: postgres-order-api-storage
+          persistentVolumeClaim:
+            claimName: postgres-order-api-pvc
