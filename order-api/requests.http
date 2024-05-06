@@ -7,7 +7,7 @@ Content-Type: application/json
 
 ###
 
-PUT http://localhost:8080/v1/order/4/item
+PUT http://localhost:8080/v1/order/1/item
 Content-Type: application/json
 
 {

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api-deployment
+  namespace: app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+    spec:
+      containers:
+      - name: order-api
+        image: ${REGISTRY}/${IMAGE}:${TAG}
+        ports:
+        - containerPort: 8080
+        env:
+          - name: DATABASE_URL
+            value: postgres://orderapi:orderapi@postgres-order-api.postgres.svc.cluster.local:5432/orderapi
+          - name: PORT
+            value: ":8080"
