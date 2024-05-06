@@ -12,9 +12,15 @@ import (
 
 func main() {
 	pod := infra_database.PostgresOrderDatabase{}
+	pid := infra_database.PostgresItemDatabase{}
 
 	co := usecase.CreateOrderUseCase{
 		OrderDatabase: pod,
+	}
+
+	ai := usecase.AddItemUseCase{
+		OrderDatabase: pod,
+		ItemDatabase:  pid,
 	}
 
 	controller := infra_controller.EchoController{
@@ -22,6 +28,7 @@ func main() {
 		Echo:               echo.New(),
 		Port:               os.Getenv("PORT"),
 		CreateOrderUseCase: co,
+		AddItemUsecase:     ai,
 	}
 	if err := controller.Start(); err != nil {
 		panic(err)

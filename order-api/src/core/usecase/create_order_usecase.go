@@ -13,9 +13,11 @@ type CreateOrderUseCase struct {
 
 func (uc CreateOrderUseCase) Execute(order domain.OrderDomain) (domain.OrderDomain, error) {
 	order.OrderDate = time.Now()
+
 	order, err := uc.OrderDatabase.Save(order)
 	if err != nil {
 		return domain.OrderDomain{}, err
 	}
+
 	return order, nil
 }

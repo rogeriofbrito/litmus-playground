@@ -4,3 +4,14 @@ Content-Type: application/json
 {
     "customerName": "foo"
 }
+
+###
+
+PUT http://localhost:8080/v1/order/4/item
+Content-Type: application/json
+
+{
+    "itemName": "foo",
+    "quantity": 10,
+    "price": 12.99
+}

@@ -2,11 +2,11 @@ package infra_database
 
 import (
 	"context"
-	"errors"
 	"os"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/rogeriofbrito/litmus-playground/order-api/src/core/domain"
+	infra_error "github.com/rogeriofbrito/litmus-playground/order-api/src/infra/error"
 )
 
 type PostgresOrderDatabase struct{}
@@ -25,8 +25,7 @@ func (d PostgresOrderDatabase) Save(order domain.OrderDomain) (domain.OrderDomai
 	) VALUES (
 		  $1
 		, $2
-	)
-	returning 
+	) returning 
 		  order_id
 		, customer_name
 		, order_date`
@@ -42,8 +41,39 @@ func (d PostgresOrderDatabase) Save(order domain.OrderDomain) (domain.OrderDomai
 			return domain.OrderDomain{}, err
 		}
 	} else {
-		return domain.OrderDomain{}, errors.New("PostgresOrderDatabase.Save: insert does't return values")
+		return domain.OrderDomain{}, infra_error.ErrQueryNotReturnValues
 	}
 
 	return order, nil
+}
+
+func (d PostgresOrderDatabase) Count(orderID int64) (int64, error) {
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return 0, err
+	}
+	defer conn.Close(context.Background())
+
+	count := `
+	SELECT 
+		COUNT(order_id) 
+	FROM "order" 
+	WHERE order_id = $1`
+
+	rows, err := conn.Query(context.Background(), count, orderID)
+	if err != nil {
+		return 0, err
+	}
+
+	var countResult int64
+	if rows.Next() {
+		err = rows.Scan(&countResult)
+		if err != nil {
+			return 0, err
+		}
+	} else {
+		return 0, infra_error.ErrQueryNotReturnValues
+	}
+
+	return countResult, nil
 }
