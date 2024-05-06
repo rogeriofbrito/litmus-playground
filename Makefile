@@ -2,11 +2,15 @@ REGISTRY := localhost:5000
 LIQUIBASE_ORDER_API_IMAGE_NAME := order-api
 LIQUIBASE_ORDER_API_TAG := $(shell openssl rand -hex 4)
 
+# order-api K8S Postgres
+
 order-api-k8s-postgres:
 	kubectl apply -f ./order-api/k8s/postgres/namespace.yaml
 	kubectl apply -f ./order-api/k8s/postgres/pvc.yaml
 	kubectl apply -f ./order-api/k8s/postgres/deployment.yaml
 	kubectl apply -f ./order-api/k8s/postgres/service.yaml
+
+# order-api K8S Liquibase
 
 order-api-liquibase: order-api-docker-liquibase order-api-k8s-liquibase
 
