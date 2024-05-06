@@ -1,6 +1,6 @@
 # litmus-playground
 
-## Running minikube with registry addon
+## Running minikube
 
 1. Delete any existing minikube cluster
 
@@ -14,13 +14,14 @@ minikube delete
 minikube start --insecure-registry "10.0.0.0/24"
 ```
 
-3. Enable the registry addon on Minikube cluster
+3. Enable Minikube Addons
 
 ```bash
 minikube addons enable registry
+minikube addons enable metrics-server
 ```
 
-4. Run socat command
+4. Run socat command to registry port
 
 ```bash
 docker run --rm -it --network=host alpine ash -c "apk add socat && socat TCP-LISTEN:5000,reuseaddr,fork TCP:$(minikube ip):5000"
@@ -85,8 +86,38 @@ kubectl port-forward --namespace litmus service/chaos-litmus-frontend-service 81
 make order-api-k8s-postgres
 ```
 
-## Run order-api migration
+## Run order-api database port-forward
+
+```bash
+kubectl port-forward --namespace postgres service/postgres-order-api 5432:5432
+```
+
+## Install order-api migration
 
 ```bash
 make order-api-liquibase
+```
+
+## Install order-api app
+
+```bash
+make order-api-app
+```
+
+## Run order-api database port-forward
+
+```bash
+kubectl port-forward --namespace app service/order-api-service 8080:80
+```
+
+## Install k6
+
+```bash
+make k6
+```
+
+## Run k6 port-forward
+
+```bash
+kubectl port-forward --namespace k6 service/k6-service 5665:5665
 ```

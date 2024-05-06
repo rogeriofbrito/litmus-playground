@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k6-deployment
+  namespace: k6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k6
+  template:
+    metadata:
+      labels:
+        app: k6
+    spec:
+      containers:
+        - name: k6
+          image: ${REGISTRY}/${IMAGE}:${TAG}
+          command:
+            - k6
+            - run
+          args:
+            - -e
+            - ORDER_HOST=order-api-service.app.svc.cluster.local
+            - -e
+            - ORDER_PORT=80
+            - -e
+            - K6_WEB_DASHBOARD=true
+            - script.js
+            - --vus
+            - '10'
+            - --duration
+            - 600s
