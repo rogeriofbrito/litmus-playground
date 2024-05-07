@@ -11,7 +11,7 @@ minikube delete
 2. Start a new minikube cluster with `--insecure-registry` flag
 
 ```bash
-minikube start --insecure-registry "10.0.0.0/24"
+minikube start --insecure-registry "10.0.0.0/24" --cpus 4
 ```
 
 3. Enable Minikube Addons
@@ -54,9 +54,12 @@ If the command will be executed in a ARM-based machine, specify a Mongo DB compa
 ```bash
 helm install chaos litmuschaos/litmus --namespace=litmus \
 --set portal.frontend.service.type=NodePort \
---set mongodb.image.registry=ghcr.io/zcube \
---set mongodb.image.repository=bitnami-compat/mongodb \
---set mongodb.image.tag=6.0.5
+--set mongodb.image.registry=docker.io \
+--set mongodb.image.repository=zcube/bitnami-compat-mongodb \
+--set mongodb.image.tag=6.0.5 \
+--set mongodb.volumePermissions.image.registry=docker.io \
+--set mongodb.volumePermissions.image.repository=bitnami/os-shell \
+--set mongodb.volumePermissions.image.tag=12-debian-12-r19
 ```
 
 In case of others CPUs, you can use the default Mongo DB image:

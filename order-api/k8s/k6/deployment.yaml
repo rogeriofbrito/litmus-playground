@@ -28,6 +28,6 @@ spec:
             - K6_WEB_DASHBOARD=true
             - script.js
             - --vus
-            - '10'
+            - '20'
             - --duration
-            - 600s
+            - 3600s
