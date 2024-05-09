@@ -11,8 +11,12 @@ minikube delete
 2. Start a new minikube cluster with `--insecure-registry` flag
 
 ```bash
-minikube start --insecure-registry "10.0.0.0/24" --cpus 4
+minikube start --force-systemd=true --insecure-registry "10.0.0.0/24" --cpus 4
+minikube start --force-systemd=true --container-runtime=containerd --insecure-registry "10.0.0.0/24" --cpus 4
+
 ```
+
+Obs: --force-systemd=true necessary to set cgroup manager. This is a necessary condition to run pod-cpu-hog experiments.
 
 3. Enable Minikube Addons
 
