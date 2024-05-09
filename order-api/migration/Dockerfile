@@ -1,3 +1,3 @@
-FROM liquibase/liquibase:4.2.2
+FROM liquibase/liquibase:4.27
 WORKDIR /liquibase
 COPY ./changelog ./changelog
