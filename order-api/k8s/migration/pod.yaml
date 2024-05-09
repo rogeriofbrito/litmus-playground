@@ -14,3 +14,4 @@ spec:
         - --username=orderapi 
         - --password=orderapi
         - update
+      imagePullPolicy: IfNotPresent

@@ -25,3 +25,4 @@ spec:
             value: postgres://orderapi:orderapi@postgres-order-api.postgres.svc.cluster.local:5432/orderapi
           - name: PORT
             value: ":8080"
+        imagePullPolicy: IfNotPresent
