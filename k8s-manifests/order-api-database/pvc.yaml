@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-order-api-pvc
-  namespace: postgres
+  name: order-api-database-pvc
+  namespace: order-api-database
 spec:
   accessModes:
     - ReadWriteOnce

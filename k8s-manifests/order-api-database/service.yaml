@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-order-api
-  namespace: postgres
+  name: order-api-database-service
+  namespace: order-api-database
 spec:
   selector:
-    app: postgres-order-api
+    app: order-api-database
   ports:
     - protocol: TCP
       port: 5432

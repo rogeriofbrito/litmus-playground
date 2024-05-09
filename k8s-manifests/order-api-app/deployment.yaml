@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order-api-deployment
-  namespace: app
+  name: order-api-app-deployment
+  namespace: order-api-app
   labels:
-    app: order-api
+    app: order-api-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: order-api
+      app: order-api-app
   template:
     metadata:
       labels:
-        app: order-api
+        app: order-api-app
     spec:
       containers:
-      - name: order-api
+      - name: order-api-app
         image: ${REGISTRY}/${IMAGE}:${TAG}
         ports:
         - containerPort: 8080
         env:
           - name: DATABASE_URL
-            value: postgres://orderapi:orderapi@postgres-order-api.postgres.svc.cluster.local:5432/orderapi
+            value: postgres://orderapi:orderapi@order-api-database-service.order-api-database.svc.cluster.local:5432/orderapi
           - name: PORT
             value: ":8080"
         imagePullPolicy: IfNotPresent

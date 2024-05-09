@@ -5,7 +5,7 @@
 1. Create a new kind cluster if it doesn't exists
 
 ```bash
-kind create
+kind create cluster
 ```
 
 2. Set `kind-kind` as current kubectl context
@@ -74,19 +74,19 @@ kubectl port-forward --namespace litmus service/chaos-litmus-frontend-service 81
 ## Install order-api database
 
 ```bash
-make order-api-k8s-postgres
+make order-api-database
 ```
 
 ## Run order-api database port-forward
 
 ```bash
-kubectl port-forward --namespace postgres service/postgres-order-api 5432:5432
+kubectl port-forward --namespace order-api-database service/order-api-database-service 5432:5432
 ```
 
 ## Install order-api migration
 
 ```bash
-make order-api-liquibase
+make order-api-migration
 ```
 
 ## Install order-api app
@@ -98,17 +98,17 @@ make order-api-app
 ## Run order-api database port-forward
 
 ```bash
-kubectl port-forward --namespace app service/order-api-service 8080:80
+kubectl port-forward --namespace order-api-app service/order-api-app-service 8080:8080
 ```
 
 ## Install k6
 
 ```bash
-make k6
+make k6-loadtest
 ```
 
 ## Run k6 port-forward
 
 ```bash
-kubectl port-forward --namespace k6 service/k6-service 5665:5665
+kubectl port-forward --namespace k6-loadtest service/k6-service 5665:5665
 ```
