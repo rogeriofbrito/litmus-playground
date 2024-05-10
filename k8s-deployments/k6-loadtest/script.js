@@ -12,6 +12,10 @@ export default function () {
 
   let orderRes = http.post(`http://${__ENV.ORDER_HOST}:${__ENV.ORDER_PORT}/v1/order`, JSON.stringify(order), headers);
 
+  if (orderRes.status !== 200) {
+    return;
+  }
+
   for (var i = 0; i < 10; i++) {
     let item = {
       itemName: randomString(8),

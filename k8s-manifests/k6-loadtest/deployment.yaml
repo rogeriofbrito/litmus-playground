@@ -26,8 +26,6 @@ spec:
             - ORDER_PORT=8080
             - -e
             - K6_WEB_DASHBOARD=true
-            - -e
-            - K6_WEB_DASHBOARD_PERIOD=1s
             - script.js
             - --vus
             - '20'
