@@ -57,10 +57,10 @@ helm install chaos litmuschaos/litmus --namespace=litmus \
 --set portal.frontend.service.type=NodePort
 ```
 
-4. Run port-forward to Litmus frontend service
+4. Apply patch to change NodePort port
 
 ```bash
-kubectl port-forward --namespace litmus service/chaos-litmus-frontend-service 8185:9091
+kubectl patch service chaos-litmus-frontend-service -n litmus --patch "$(cat litmus-frontend-service-patch.yaml)"
 ```
 
 ## Install Chaos Infrastructure
@@ -71,25 +71,25 @@ kubectl port-forward --namespace litmus service/chaos-litmus-frontend-service 81
 
 3. Create a Chaos Environment with name `infrastructure`
 
-## Install order-api database
+## Install order-api-database
 
 ```bash
 make order-api-database
 ```
 
-## Install order-api migration
+## Install order-api-migration
 
 ```bash
 make order-api-migration
 ```
 
-## Install order-api app
+## Install order-api-app
 
 ```bash
 make order-api-app
 ```
 
-## Install k6
+## Install k6-loadtest
 
 ```bash
 make k6-loadtest

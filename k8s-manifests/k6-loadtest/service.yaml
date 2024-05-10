@@ -11,4 +11,4 @@ spec:
     - protocol: TCP
       port: 5665
       targetPort: 5665
-      nodePort: 30002
+      nodePort: 30003
