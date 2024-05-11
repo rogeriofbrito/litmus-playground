@@ -18,6 +18,12 @@ type EchoController struct {
 	AddItemUsecase     usecase.AddItemUseCase
 }
 
+func (c EchoController) Health() HealthResponseModel {
+	return HealthResponseModel{
+		Status: "UP",
+	}
+}
+
 func (c EchoController) CreateOrder(req CreateOrderRequestModel) (CreateOrderResponseModel, error) {
 	order := domain.OrderDomain{
 		CustomerName: req.CustomerName,
@@ -60,6 +66,7 @@ func (controller EchoController) Start() error {
 	root := controller.Echo.Group("/v1")
 	order := root.Group("/order")
 	item := order.Group("/:orderID/item")
+	health := root.Group("/health")
 
 	order.POST("", func(c echo.Context) error {
 		// bind request body
@@ -108,6 +115,10 @@ func (controller EchoController) Start() error {
 		}
 
 		return c.JSON(http.StatusOK, res)
+	})
+
+	health.GET("", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, controller.Health())
 	})
 
 	return controller.Echo.Start(controller.Port)

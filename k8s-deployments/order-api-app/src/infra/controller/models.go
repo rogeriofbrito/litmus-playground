@@ -2,6 +2,10 @@ package infra_controller
 
 import "time"
 
+type HealthResponseModel struct {
+	Status string `json:"status"`
+}
+
 type CreateOrderRequestModel struct {
 	CustomerName string `json:"customerName" validate:"required"`
 }
