@@ -71,8 +71,14 @@ kubectl patch service chaos-litmus-frontend-service -n litmus --patch "$(cat lit
 
 3. Create a Chaos Environment with name `infrastructure`
 
-## Install applications and loadtest
+## Install order-api
 
 ```bash
-make all
+make order-api
+```
+
+## Install k6-loadtest
+
+```bash
+make k6-loadtest
 ```
