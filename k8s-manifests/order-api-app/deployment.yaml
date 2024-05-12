@@ -15,6 +15,14 @@ spec:
       labels:
         app: order-api-app
     spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:latest
+        command:
+          - sh
+          - '-c'
+          - until nc -z -v -w30 order-api-database-service.order-api-database.svc.cluster.local 5432; do echo waiting for postgres; sleep 2; done;
+        imagePullPolicy: IfNotPresent
       containers:
       - name: order-api-app
         image: ${REGISTRY}/${IMAGE}:${TAG}

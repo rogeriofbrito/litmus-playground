@@ -6,6 +6,10 @@ ORDER_API_TAG := latest
 K6_IMAGE_NAME := k6
 K6_TAG := latest
 
+# all
+
+all: order-api-database order-api-migration order-api-app k6-loadtest
+
 # order-api-database
 
 order-api-database: order-api-database-k8s
