@@ -1,8 +1,8 @@
-# litmus-playground
+# litmus-playground with Kind
 
-## Running kind
+## Running Kind
 
-1. Create a new kind cluster if it doesn't exists
+1. Create a new Kind cluster if it doesn't exists
 
 ```bash
 kind create cluster --config kind-config.yaml
