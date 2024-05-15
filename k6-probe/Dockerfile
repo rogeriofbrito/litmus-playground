@@ -10,19 +10,3 @@ USER root
 RUN chmod +x script.sh
 
 ENTRYPOINT [ "./script.sh" ]
-
-# apk add kubernetes
-
-# kubectl apply -f - <<EOF
-# apiVersion: rbac.authorization.k8s.io/v1
-# kind: Role
-# metadata:
-#   namespace: order-api-app
-#   name: admin
-# rules:
-# - apiGroups: ["*"]
-#   resources: ["*"]
-#   verbs: ["*"]
-# EOF
-
-# kubectl create rolebinding default-admin --role=admin --serviceaccount=order-api-app:default --namespace=order-api-app

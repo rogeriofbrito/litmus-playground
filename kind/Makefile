@@ -64,6 +64,23 @@ k6-loadtest-k8s:
 	REGISTRY=$(REGISTRY) IMAGE=$(K6_LOADTEST_IMAGE_NAME) TAG=$(K6_LOADTEST_IMAGE_TAG) envsubst < ../k8s-manifests/k6-loadtest/deployment.yaml | kubectl apply --force -f -
 	kubectl apply --force -f ../k8s-manifests/k6-loadtest/service.yaml
 
+# probe-api-app
+
+probe-api-app: probe-api-app-docker probe-api-app-k8s
+
+probe-api-app-docker:
+	docker build --no-cache -t $(ORDER_API_APP_IMAGE_NAME) ../k8s-deployments/probe-api-app
+	docker tag $(ORDER_API_APP_IMAGE_NAME) $(REGISTRY)/$(ORDER_API_APP_IMAGE_NAME):$(ORDER_API_APP_IMAGE_TAG)
+	kind load docker-image $(REGISTRY)/$(ORDER_API_APP_IMAGE_NAME):$(ORDER_API_APP_IMAGE_TAG)
+
+probe-api-app-k8s:
+	kubectl apply --force -f ../k8s-manifests/probe-api-app/namespace.yaml
+	REGISTRY=$(REGISTRY) IMAGE=$(ORDER_API_APP_IMAGE_NAME) TAG=$(ORDER_API_APP_IMAGE_TAG) envsubst < ../k8s-manifests/probe-api-app/deployment.yaml | kubectl delete --force -f - || true
+	REGISTRY=$(REGISTRY) IMAGE=$(ORDER_API_APP_IMAGE_NAME) TAG=$(ORDER_API_APP_IMAGE_TAG) envsubst < ../k8s-manifests/probe-api-app/deployment.yaml | kubectl apply --force -f -
+	kubectl apply --force -f ../k8s-manifests/probe-api-app/service.yaml
+	kubectl apply --force -f ../k8s-manifests/probe-api-app/role.yaml
+	kubectl apply --force -f ../k8s-manifests/probe-api-app/role-binding.yaml
+
 # k6-probe
 
 k6-probe: k6-probe-docker
