@@ -63,3 +63,12 @@ k6-loadtest-k8s:
 	REGISTRY=$(REGISTRY) IMAGE=$(K6_LOADTEST_IMAGE_NAME) TAG=$(K6_LOADTEST_IMAGE_TAG) envsubst < ../k8s-manifests/k6-loadtest/deployment.yaml | kubectl delete --force -f - || true
 	REGISTRY=$(REGISTRY) IMAGE=$(K6_LOADTEST_IMAGE_NAME) TAG=$(K6_LOADTEST_IMAGE_TAG) envsubst < ../k8s-manifests/k6-loadtest/deployment.yaml | kubectl apply --force -f -
 	kubectl apply --force -f ../k8s-manifests/k6-loadtest/service.yaml
+
+# k6-probe
+
+k6-probe: k6-probe-docker
+
+k6-probe-docker:
+	docker build --no-cache -t k6-probe ../k6-probe
+	docker tag k6-probe localhost:5000/k6-probe:latest
+	kind load docker-image localhost:5000/k6-probe:latest
