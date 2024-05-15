@@ -5,6 +5,8 @@ ORDER_API_APP_IMAGE_NAME := order-api-app
 ORDER_API_APP_IMAGE_TAG := latest
 K6_LOADTEST_IMAGE_NAME := k6
 K6_LOADTEST_IMAGE_TAG := latest
+PROBE_API_APP_IMAGE_NAME := probe-api-app
+PROBE_API_APP_IMAGE_TAG := latest
 
 # order-api
 
@@ -69,14 +71,14 @@ k6-loadtest-k8s:
 probe-api-app: probe-api-app-docker probe-api-app-k8s
 
 probe-api-app-docker:
-	docker build --no-cache -t $(ORDER_API_APP_IMAGE_NAME) ../k8s-deployments/probe-api-app
-	docker tag $(ORDER_API_APP_IMAGE_NAME) $(REGISTRY)/$(ORDER_API_APP_IMAGE_NAME):$(ORDER_API_APP_IMAGE_TAG)
-	kind load docker-image $(REGISTRY)/$(ORDER_API_APP_IMAGE_NAME):$(ORDER_API_APP_IMAGE_TAG)
+	docker build --no-cache -t $(PROBE_API_APP_IMAGE_NAME) ../k8s-deployments/probe-api-app
+	docker tag $(PROBE_API_APP_IMAGE_NAME) $(REGISTRY)/$(PROBE_API_APP_IMAGE_NAME):$(PROBE_API_APP_IMAGE_TAG)
+	kind load docker-image $(REGISTRY)/$(PROBE_API_APP_IMAGE_NAME):$(PROBE_API_APP_IMAGE_TAG)
 
 probe-api-app-k8s:
 	kubectl apply --force -f ../k8s-manifests/probe-api-app/namespace.yaml
-	REGISTRY=$(REGISTRY) IMAGE=$(ORDER_API_APP_IMAGE_NAME) TAG=$(ORDER_API_APP_IMAGE_TAG) envsubst < ../k8s-manifests/probe-api-app/deployment.yaml | kubectl delete --force -f - || true
-	REGISTRY=$(REGISTRY) IMAGE=$(ORDER_API_APP_IMAGE_NAME) TAG=$(ORDER_API_APP_IMAGE_TAG) envsubst < ../k8s-manifests/probe-api-app/deployment.yaml | kubectl apply --force -f -
+	REGISTRY=$(REGISTRY) IMAGE=$(PROBE_API_APP_IMAGE_NAME) TAG=$(PROBE_API_APP_IMAGE_TAG) envsubst < ../k8s-manifests/probe-api-app/deployment.yaml | kubectl delete --force -f - || true
+	REGISTRY=$(REGISTRY) IMAGE=$(PROBE_API_APP_IMAGE_NAME) TAG=$(PROBE_API_APP_IMAGE_TAG) envsubst < ../k8s-manifests/probe-api-app/deployment.yaml | kubectl apply --force -f -
 	kubectl apply --force -f ../k8s-manifests/probe-api-app/service.yaml
 	kubectl apply --force -f ../k8s-manifests/probe-api-app/role.yaml
 	kubectl apply --force -f ../k8s-manifests/probe-api-app/role-binding.yaml
