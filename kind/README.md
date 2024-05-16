@@ -67,9 +67,22 @@ kubectl patch service chaos-litmus-frontend-service -n litmus --patch "$(cat lit
 
 1. Access Litmus ChaosCenter at [http://localhost:8185](http://localhost:8185) with username `admin` and password `litmus`
 
-2. Create a Chaos Environment with name `env`
+2. Create a Pre-Production Chaos Environment with name `preproduction`
 
-3. Create a Chaos Environment with name `infrastructure`
+3. Install Litmus Agent Helm Chart (remember replace `<project-id>` value)
+
+```bash
+helm install litmus-agent litmuschaos/litmus-agent \
+--namespace litmus \
+--set "INFRA_NAME=helm-agent" \
+--set "INFRA_DESCRIPTION=helm-agent" \
+--set "LITMUS_URL=http://chaos-litmus-frontend-service.litmus.svc.cluster.local:9091" \
+--set "LITMUS_BACKEND_URL=http://chaos-litmus-server-service.litmus.svc.cluster.local:9002" \
+--set "LITMUS_USERNAME=admin" \
+--set "LITMUS_PASSWORD=litmus" \
+--set "LITMUS_PROJECT_ID=<project-id>" \
+--set "LITMUS_ENVIRONMENT_ID=preproduction"
+```
 
 ## Install order-api
 
