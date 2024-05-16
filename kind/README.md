@@ -90,6 +90,18 @@ helm install litmus-agent litmuschaos/litmus-agent \
 make order-api
 ```
 
+## Install probe-api
+
+```bash
+make probe-api
+```
+
+## Install k6-probe
+
+```bash
+make k6-probe
+```
+
 ## Install k6-loadtest
 
 ```bash

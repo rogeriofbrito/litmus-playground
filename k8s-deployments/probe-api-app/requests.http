@@ -1,1 +1,1 @@
-GET http://localhost:9000/probe/k6/smoke-test-order-api
+GET http://localhost:8081/probe/k6/smoke-test-order-api

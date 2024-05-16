@@ -66,6 +66,10 @@ k6-loadtest-k8s:
 	REGISTRY=$(REGISTRY) IMAGE=$(K6_LOADTEST_IMAGE_NAME) TAG=$(K6_LOADTEST_IMAGE_TAG) envsubst < ../k8s-manifests/k6-loadtest/deployment.yaml | kubectl apply --force -f -
 	kubectl apply --force -f ../k8s-manifests/k6-loadtest/service.yaml
 
+# probe-api
+
+probe-api: probe-api-app
+
 # probe-api-app
 
 probe-api-app: probe-api-app-docker probe-api-app-k8s
