@@ -1,18 +1,32 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
 	e := echo.New()
 
-	e.GET("/probe/k6/smoke-test-order-api", func(c echo.Context) error {
-		// TODO: generate random pod name
-		cmd := exec.Command("/bin/sh", "-c", "kubectl run k6-probe -n probe-api-app --env=PROBE_ID=smoke-test-order-api --env=ORDER_HOST=order-api-app-service.order-api-app.svc.cluster.local --env=ORDER_PORT=8080 --image-pull-policy=IfNotPresent --image=localhost:5000/k6-probe:latest --restart=Never --rm -it")
+	e.GET("/probe", func(c echo.Context) error {
+		envs := c.QueryParam("envs")
+		image := c.QueryParam("image")
+
+		uuid := uuid.New()
+		podUniqueId := strings.Split(uuid.String(), "-")[0]
+		podName := fmt.Sprintf("k6-probe-%s", podUniqueId)
+
+		kubectlEnvs := getKubectlEnvs(envs)
+
+		command := fmt.Sprintf("kubectl run %s -n probe-api-app %s --image-pull-policy=IfNotPresent --image=%s --restart=Never --rm -it", podName, kubectlEnvs, image)
+
+		cmd := exec.Command("/bin/sh", "-c", command)
 
 		if err := cmd.Run(); err != nil {
 			return c.NoContent(http.StatusInternalServerError)
@@ -20,7 +34,21 @@ func main() {
 		return c.NoContent(http.StatusOK)
 	})
 
-	if err := e.Start(":8080"); err != nil {
+	if err := e.Start(os.Getenv("PORT")); err != nil {
 		panic(err)
 	}
+}
+
+func getKubectlEnvs(envs string) string {
+	kubectlEnvs := ""
+
+	envsSplited := strings.Split(envs, ",")
+	for _, env := range envsSplited {
+		envSplited := strings.Split(env, "=")
+		envName := envSplited[0]
+		envValue := envSplited[1]
+		kubectlEnvs = kubectlEnvs + fmt.Sprintf("--env=%s=%s ", envName, envValue)
+	}
+
+	return strings.TrimSpace(kubectlEnvs)
 }

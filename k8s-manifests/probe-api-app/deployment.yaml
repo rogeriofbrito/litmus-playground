@@ -20,4 +20,7 @@ spec:
         image: ${REGISTRY}/${IMAGE}:${TAG}
         ports:
         - containerPort: 8080
+        env:
+          - name: PORT
+            value: ":8080"
         imagePullPolicy: IfNotPresent
