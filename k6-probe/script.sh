@@ -1,3 +1,3 @@
 #!/bin/sh
 
-k6 run ./probe/$PROBE_ID/script.js -i 10
+k6 run ./probe/$PROBE_ID/script.js --vus 1 --duration $DURATION

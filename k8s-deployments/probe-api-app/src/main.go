@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"time"
 
@@ -17,30 +16,31 @@ func main() {
 	e := echo.New()
 
 	e.GET("/probe", func(c echo.Context) error {
-		timeoutMsParam := c.QueryParam("timeoutMs")
+		// TODO: validate params
+		duration := c.QueryParam("duration")
 		envs := c.QueryParam("envs")
 		image := c.QueryParam("image")
 
-		timeoutMs, err := strconv.ParseInt(timeoutMsParam, 10, 64)
+		durationParsed, err := time.ParseDuration(duration)
 		if err != nil {
-			fmt.Println("invalid timeout param")
 			return c.NoContent(http.StatusInternalServerError)
 		}
+		marginDuration, _ := time.ParseDuration("30s")
 
 		uuid := uuid.New()
 		podUniqueId := strings.Split(uuid.String(), "-")[0]
 		podName := fmt.Sprintf("k6-probe-%s", podUniqueId)
 
 		kubectlEnvs := getKubectlEnvs(envs)
+		kubectlEnvs = addKubectlEnv(kubectlEnvs, "DURATION", duration)
 
 		// TODO: set resource limits in pod
 		runCommand := fmt.Sprintf("kubectl run %s -n probe-api-app %s --image-pull-policy=IfNotPresent --image=%s --restart=Never --rm -it", podName, kubectlEnvs, image)
 		deleteCommand := fmt.Sprintf("kubectl delete pod %s -n probe-api-app --force=true", podName)
-
 		runCmd := exec.Command("/bin/sh", "-c", runCommand)
 		deleteCmd := exec.Command("/bin/sh", "-c", deleteCommand)
 
-		timeout := time.After(time.Duration(timeoutMs) * time.Millisecond)
+		timeout := time.After(time.Duration(durationParsed + marginDuration))
 		success := make(chan bool)
 		fail := make(chan bool)
 
@@ -83,4 +83,8 @@ func getKubectlEnvs(envs string) string {
 	}
 
 	return strings.TrimSpace(kubectlEnvs)
+}
+
+func addKubectlEnv(kubectlEnvs string, envName string, envValue string) string {
+	return strings.TrimSpace(kubectlEnvs) + fmt.Sprintf(" --env=%s=%s", envName, envValue)
 }

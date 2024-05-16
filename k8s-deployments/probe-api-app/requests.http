@@ -1,1 +1,1 @@
-GET http://localhost:9081/probe?timeoutMs=2000&envs=PROBE_ID=smoke-test-order-api,ORDER_HOST=order-api-app-service.order-api-app.svc.cluster.local,ORDER_PORT=8080&image=localhost:5000/k6-probe:latest
+GET http://localhost:9081/probe?duration=10s&envs=PROBE_ID=smoke-test-order-api,ORDER_HOST=order-api-app-service.order-api-app.svc.cluster.local,ORDER_PORT=8080&image=localhost:5000/k6-probe:latest
