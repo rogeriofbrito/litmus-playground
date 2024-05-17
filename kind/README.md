@@ -65,9 +65,17 @@ kubectl patch service chaos-litmus-frontend-service -n litmus --patch "$(cat lit
 
 ## Install Chaos Infrastructure
 
-1. Access Litmus ChaosCenter at [http://localhost:8185](http://localhost:8185) with username `admin` and password `litmus`
+1. Create a `litmusctl` image
 
-2. Create a Pre-Production Chaos Environment with name `preproduction`
+```bash
+make litmusctl
+```
+
+2. Install `litmus-init`
+
+```bash
+make litmus-init
+```
 
 3. Install Litmus Agent Helm Chart (remember replace `<project-id>` value)
 
