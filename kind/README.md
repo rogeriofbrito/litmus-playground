@@ -40,7 +40,9 @@ helm repo add litmuschaos https://litmuschaos.github.io/litmus-helm/
 If the command will be executed in a ARM-based machine, specify a Mongo DB compatible image:
 
 ```bash
-helm install chaos litmuschaos/litmus --namespace=litmus \
+helm install chaos litmuschaos/litmus \
+--version 3.6.0 \
+--namespace=litmus \
 --set portal.frontend.service.type=NodePort \
 --set mongodb.image.registry=docker.io \
 --set mongodb.image.repository=zcube/bitnami-compat-mongodb \
@@ -81,6 +83,7 @@ make litmus-init
 
 ```bash
 helm install litmus-agent litmuschaos/litmus-agent \
+--version 3.6.0 \
 --namespace litmus \
 --set "INFRA_NAME=helm-agent" \
 --set "INFRA_DESCRIPTION=helm-agent" \
@@ -91,6 +94,10 @@ helm install litmus-agent litmuschaos/litmus-agent \
 --set "LITMUS_PROJECT_ID=<project-id>" \
 --set "LITMUS_ENVIRONMENT_ID=preproduction"
 ```
+
+Obs: to get the `project-id` value, access Litmus interface at http://localhost:8185 and click on projects selector. You will see the `admin-project` card. Just copy the id of this project.
+
+![](../images/litmus_admin_project_id.png)
 
 ## Install order-api
 
