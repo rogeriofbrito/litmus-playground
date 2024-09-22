@@ -55,7 +55,9 @@ helm install chaos litmuschaos/litmus \
 In case of others CPUs, you can use the default Mongo DB image:
 
 ```bash
-helm install chaos litmuschaos/litmus --namespace=litmus \
+helm install chaos litmuschaos/litmus \
+--version 3.6.0 \
+--namespace=litmus \
 --set portal.frontend.service.type=NodePort
 ```
 
