@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "order-api.fullname" . }}
+  labels:
+    {{- include "order-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "order-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "order-api.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "order-api.serviceAccountName" . }}
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:latest # TODO: create variable
+        command:
+          - sh
+          - '-c'
+          - until nc -z -v -w30 $DATABASE_HOST $DATABASE_PORT; do echo waiting for postgres; sleep 2; done;
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: {{ include "order-api.fullname" . }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - name: http
+            containerPort: {{ .Values.service.port }}
+            protocol: TCP
+        {{- with .Values.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        envFrom:
+        - configMapRef:
+          name: {{ include "order-api.fullname" . }}
+        - secretRef:
+          name: {{ include "order-api.fullname" . }}

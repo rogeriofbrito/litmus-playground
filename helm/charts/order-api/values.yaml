@@ -1,0 +1,48 @@
+replicaCount: 2
+
+image:
+  repository: rogeriofbrito/order-api
+  pullPolicy: Always
+  tag: latest
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+configs:
+  DATABASE_HOST: order-api-database-service.order-api-database.svc.cluster.local
+  DATABASE_NAME: orderapi
+  DATABASE_PORT: "5432"
+
+secrets:
+  DATABASE_PASSWORD: ""
