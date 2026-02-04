@@ -14,8 +14,8 @@ permissions:
 
 env:
   IMAGE_NAME: order-api-migration
-  DOCKERFILE_PATH: k8s-deployments/order-api-app/migration/Dockerfile
-  BUILD_CONTEXT: k8s-deployments/order-api-app/migration
+  DOCKERFILE_PATH: order-api/migration/Dockerfile
+  BUILD_CONTEXT: order-api/migration
 
 jobs:
   build-and-push:

@@ -9,7 +9,7 @@ docker-compose up -d
 ## Run liquibase update
 
 ```bash
-liquibase --url=jdbc:postgresql://localhost:5432/orderapi?currentSchema=public --changeLogFile=./migration/changelog/changelog.yaml --username=orderapi --password=orderapi update
+docker run --rm --network host -v ./migration/changelog:/liquibase/changelog liquibase/liquibase:4.27 --url=jdbc:postgresql://localhost:5432/orderapi?currentSchema=public --changeLogFile=./changelog/changelog.yaml --username=orderapi --password=orderapi update
 ```
 
 ## Run k6

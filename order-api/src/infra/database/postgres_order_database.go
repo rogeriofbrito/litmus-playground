@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/rogeriofbrito/litmus-playground/order-api/src/core/domain"
-	infra_error "github.com/rogeriofbrito/litmus-playground/order-api/src/infra/error"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
+	infra_error "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/error"
 )
 
 type PostgresOrderDatabase struct{}

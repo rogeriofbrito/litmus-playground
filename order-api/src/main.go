@@ -8,9 +8,9 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/rogeriofbrito/litmus-playground/order-api/src/core/usecase"
-	infra_controller "github.com/rogeriofbrito/litmus-playground/order-api/src/infra/controller"
-	infra_database "github.com/rogeriofbrito/litmus-playground/order-api/src/infra/database"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
+	infra_controller "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/controller"
+	infra_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/database"
 )
 
 func main() {

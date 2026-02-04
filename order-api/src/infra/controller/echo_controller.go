@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
-	"github.com/rogeriofbrito/litmus-playground/order-api/src/core/domain"
-	"github.com/rogeriofbrito/litmus-playground/order-api/src/core/usecase"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
 )
 
 type EchoController struct {

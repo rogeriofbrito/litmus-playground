@@ -1,4 +1,4 @@
-module github.com/rogeriofbrito/litmus-playground/order-api
+module github.com/rogeriofbrito/kubernetes-playground/order-api
 
 go 1.22.1
 

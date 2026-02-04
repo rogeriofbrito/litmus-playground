@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - k8s-deployments/order-api-app/**
+      - order-api/**
       - .github/workflows/docker-build-push-order-api.yml
   workflow_dispatch:
 

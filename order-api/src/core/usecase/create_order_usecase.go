@@ -3,8 +3,8 @@ package usecase
 import (
 	"time"
 
-	"github.com/rogeriofbrito/litmus-playground/order-api/src/core/domain"
-	external_database "github.com/rogeriofbrito/litmus-playground/order-api/src/core/external/database"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
+	external_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/external/database"
 )
 
 type CreateOrderUseCase struct {
