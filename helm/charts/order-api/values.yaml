@@ -41,8 +41,9 @@ readinessProbe:
 
 configs:
   DATABASE_HOST: order-api-database-service.order-api-database.svc.cluster.local
-  DATABASE_NAME: orderapi
   DATABASE_PORT: "5432"
+  DATABASE_NAME: orderapi
 
 secrets:
+  DATABASE_USER: ""
   DATABASE_PASSWORD: ""

@@ -2,7 +2,6 @@ package infra_database
 
 import (
 	"context"
-	"os"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
@@ -12,7 +11,7 @@ import (
 type PostgresItemDatabase struct{}
 
 func (d PostgresItemDatabase) Save(item domain.ItemDomain) (domain.ItemDomain, error) {
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DATABASE_URL"))
+	conn, err := pgx.Connect(context.Background(), getConnString())
 	if err != nil {
 		return domain.ItemDomain{}, err
 	}
