@@ -30,7 +30,7 @@ docker run --rm --network host -v ./migration/changelog:/liquibase/changelog liq
                 "DATABASE_HOST": "localhost",
                 "DATABASE_PORT": "5432",
                 "DATABASE_NAME": "orderapi",
-                "PORT": ":8080"
+                "PORT": "8080"
             }
         }
     ]

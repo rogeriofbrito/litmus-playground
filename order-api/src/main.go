@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -29,7 +30,7 @@ func main() {
 	controller := infra_controller.EchoController{
 		Validate:           validator.New(),
 		Echo:               newEchoClient(),
-		Port:               os.Getenv("PORT"),
+		Port:               fmt.Sprintf(":%s", os.Getenv("PORT")),
 		CreateOrderUseCase: co,
 		AddItemUsecase:     ai,
 	}
