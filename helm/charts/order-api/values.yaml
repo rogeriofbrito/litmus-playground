@@ -8,18 +8,13 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
-serviceAccount:
-  create: true
-  automount: true
-  annotations: {}
-  name: ""
-
 podAnnotations: {}
 podLabels: {}
 
 service:
   type: ClusterIP
   port: 80
+  targetPort: 8080
 
 resources:
   limits:
@@ -31,18 +26,19 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /
+    path: /v1/health
     port: http
 
 readinessProbe:
   httpGet:
-    path: /
+    path: /v1/health
     port: http
 
 configs:
   DATABASE_HOST: order-api-database-service.order-api-database.svc.cluster.local
   DATABASE_PORT: "5432"
   DATABASE_NAME: orderapi
+  PORT: "8080"
 
 secrets:
   DATABASE_USER: ""
