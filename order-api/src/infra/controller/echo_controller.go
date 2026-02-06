@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
+	log "github.com/sirupsen/logrus"
 )
 
 type EchoController struct {
@@ -19,6 +20,7 @@ type EchoController struct {
 }
 
 func (c EchoController) Health() HealthResponseModel {
+	log.Info("Handling health request")
 	return HealthResponseModel{
 		Status: "UP",
 	}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
 	infra_controller "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/controller"
 	infra_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/database"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func newEchoClient() *echo.Echo {
 		Skipper:      middleware.DefaultSkipper,
 		ErrorMessage: "custom timeout error message returns to client",
 		OnTimeoutRouteErrorHandler: func(err error, c echo.Context) {
-			log.Println(c.Path())
+			log.Errorf("Request timeout: %s", c.Path())
 		},
 		Timeout: 30 * time.Second,
 	}))
