@@ -1,14 +1,69 @@
 # litmus-playgraound
 
-## How to install kubernetes-playground helm chart?
+## Create kind cluster (for local deploy)
+
+Create a kind cluster to deploy all services:
 
 ```bash
-DATABASE_USER=<database-user>
-DATABASE_PASSWORD=<database-password>
+kind create cluster
+```
 
-helm install kubernetes-playground ./helm \
+## Setup environment variables
+
+Create a `.env` file at root directory using `.env.template` as template.
+
+## cloud-native-pg
+
+### Install cloud-native-pg operator
+
+```bash
+helm repo add cnpg https://cloudnative-pg.github.io/charts
+helm upgrade --install cnpg \
+  --namespace cnpg-system \
+  --create-namespace \
+  cnpg/cloudnative-pg
+```
+
+### Create Cluster
+
+```bash
+source .env
+
+kubectl apply -f ./k8s/pg-cluster/1-namespace.yaml
+envsubst < ./k8s/pg-cluster/2-app-user-secret.yaml | kubectl apply -f -
+envsubst < ./k8s/pg-cluster/3-super-user-secret.yaml | kubectl apply -f -
+envsubst < ./k8s/pg-cluster/4-pg-cluster.yaml | kubectl apply -f -
+
+kubectl get -n pg cluster
+```
+
+### Next
+
+* Add PGBouncer (cnpg kind Pooler)
+
+### Obs
+
+* When port-forwarding connection to a pg cluster pod, the connection is lost when testing connetion in Dbeaver. To use other functions it works well.
+
+### References
+
+https://github.com/cloudnative-pg/charts
+https://cloudnative-pg.io/docs/devel/quickstart
+https://cloudnative-pg.io/docs/devel/installation_upgrade
+
+## kubernetes-playground
+
+### Install kubernetes-playground helm chart
+
+```bash
+source .env
+
+helm upgrade --install kubernetes-playground ./helm \
 -n kubernetes-playground \
 --create-namespace \
---set order-api.secrets.DATABASE_USER="$(echo -n $DATABASE_USER | base64)" \
---set order-api.secrets.DATABASE_PASSWORD="$(echo -n $DATABASE_PASSWORD | base64)"
+--set order-api.secrets.DATABASE_HOST="$(echo -n "pg-cluster-rw.pg.svc.cluster.local" | base64)" \
+--set order-api.secrets.DATABASE_PORT="$(echo -n "5432" | base64)" \
+--set order-api.secrets.DATABASE_NAME="$(echo -n $APP_USER_DATABASE | base64)" \
+--set order-api.secrets.DATABASE_USER="$(echo -n $APP_USER_USERNAME | base64)" \
+--set order-api.secrets.DATABASE_PASSWORD="$(echo -n $APP_USER_PASSWORD | base64)"
 ```

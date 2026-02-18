@@ -35,11 +35,11 @@ readinessProbe:
     port: http
 
 configs:
-  DATABASE_HOST: order-api-database-service.order-api-database.svc.cluster.local
-  DATABASE_PORT: "5432"
-  DATABASE_NAME: orderapi
   PORT: "8080"
 
 secrets:
+  DATABASE_HOST: ""
+  DATABASE_PORT: ""
+  DATABASE_NAME: ""
   DATABASE_USER: ""
   DATABASE_PASSWORD: ""

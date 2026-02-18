@@ -28,9 +28,25 @@ spec:
           - sh
           - '-c'
           - until nc -z -v -w30 $DATABASE_HOST $DATABASE_PORT; do echo waiting for postgres; sleep 2; done;
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always # TODO: create variable
         envFrom:
-        - configMapRef:
+        - secretRef:
+            name: {{ include "order-api.fullname" . }}
+      - name: run-migration
+        image: rogeriofbrito/order-api-migration:latest # TODO: create variable
+        command:
+          - sh
+          - -c
+          - >
+            liquibase
+            --url=jdbc:postgresql://$DATABASE_HOST:$DATABASE_PORT/$DATABASE_NAME?currentSchema=public
+            --changeLogFile=./changelog/changelog.yaml 
+            --username=$DATABASE_USER
+            --password=$DATABASE_PASSWORD
+            update
+        imagePullPolicy: Always # TODO: create variable
+        envFrom:
+        - secretRef:
             name: {{ include "order-api.fullname" . }}
       containers:
       - name: {{ .Chart.Name }}
