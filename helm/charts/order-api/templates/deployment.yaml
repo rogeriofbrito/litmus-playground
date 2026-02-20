@@ -22,18 +22,19 @@ spec:
         {{- end }}
     spec:
       initContainers:
-      - name: wait-for-postgres
-        image: busybox:latest # TODO: create variable
+      - name: wait
+        image: "{{ .Values.wait.image.repository }}:{{ .Values.wait.image.tag }}"
+        imagePullPolicy: {{ .Values.wait.image.pullPolicy }}
         command:
           - sh
           - '-c'
           - until nc -z -v -w30 $DATABASE_HOST $DATABASE_PORT; do echo waiting for postgres; sleep 2; done;
-        imagePullPolicy: Always # TODO: create variable
         envFrom:
         - secretRef:
             name: {{ include "order-api.fullname" . }}
-      - name: run-migration
-        image: rogeriofbrito/order-api-migration:latest # TODO: create variable
+      - name: migration
+        image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
+        imagePullPolicy: {{ .Values.migration.image.pullPolicy }}
         command:
           - sh
           - -c
@@ -44,14 +45,13 @@ spec:
             --username=$DATABASE_USER
             --password=$DATABASE_PASSWORD
             update
-        imagePullPolicy: Always # TODO: create variable
         envFrom:
         - secretRef:
             name: {{ include "order-api.fullname" . }}
       containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+      - name: order-api
+        image: "{{ .Values.orderApi.image.repository }}:{{ .Values.orderApi.image.tag }}"
+        imagePullPolicy: {{ .Values.orderApi.image.pullPolicy }}
         ports:
           - name: http
             containerPort: {{ .Values.service.targetPort }}
