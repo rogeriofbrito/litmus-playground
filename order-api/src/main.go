@@ -17,6 +17,7 @@ import (
 func main() {
 	pod := infra_database.PostgresOrderDatabase{}
 	pid := infra_database.PostgresItemDatabase{}
+	pr := infra_database.PostgresReadiness{}
 
 	co := usecase.CreateOrderUseCase{
 		OrderDatabase: pod,
@@ -27,12 +28,17 @@ func main() {
 		ItemDatabase:  pid,
 	}
 
-	controller := infra_controller.EchoController{
-		Validate:           validator.New(),
-		Echo:               newEchoClient(),
-		Port:               fmt.Sprintf(":%s", os.Getenv("PORT")),
-		CreateOrderUseCase: co,
-		AddItemUsecase:     ai,
+	cd := usecase.CheckDatabaseUseCase{
+		IReadines: pr,
+	}
+
+	var controller infra_controller.IController = infra_controller.EchoController{
+		Validate:             validator.New(),
+		Echo:                 newEchoClient(),
+		Port:                 fmt.Sprintf(":%s", os.Getenv("PORT")),
+		CreateOrderUseCase:   co,
+		AddItemUseCase:       ai,
+		CheckDatabaseUseCase: cd,
 	}
 	if err := controller.Start(); err != nil {
 		panic(err)

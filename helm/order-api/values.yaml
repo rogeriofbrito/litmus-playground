@@ -39,12 +39,12 @@ resources:
 
 livenessProbe:
   httpGet:
-    path: /v1/health #TODO: change to /v1/liveness
+    path: /v1/liveness
     port: http
 
 readinessProbe:
   httpGet:
-    path: /v1/health #TODO: change to /v1/readiness
+    path: /v1/readiness
     port: http
 
 configs:

@@ -1,6 +1,7 @@
 package infra_controller
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -12,18 +13,31 @@ import (
 )
 
 type EchoController struct {
-	Validate           *validator.Validate
-	Echo               *echo.Echo
-	Port               string
-	CreateOrderUseCase usecase.CreateOrderUseCase
-	AddItemUsecase     usecase.AddItemUseCase
+	Validate             *validator.Validate
+	Echo                 *echo.Echo
+	Port                 string
+	CreateOrderUseCase   usecase.CreateOrderUseCase
+	AddItemUseCase       usecase.AddItemUseCase
+	CheckDatabaseUseCase usecase.CheckDatabaseUseCase
 }
 
-func (c EchoController) Health() HealthResponseModel {
-	log.Info("Handling health request")
+func (c EchoController) Liveness(_ context.Context) HealthResponseModel {
+	log.Info("Handling liveness request")
 	return HealthResponseModel{
 		Status: "UP",
 	}
+}
+
+func (c EchoController) Readiness(ctx context.Context) (HealthResponseModel, error) {
+	log.Info("Handling readiness request")
+
+	if err := c.CheckDatabaseUseCase.Execute(ctx); err != nil {
+		return HealthResponseModel{}, err
+	}
+
+	return HealthResponseModel{
+		Status: "UP",
+	}, nil
 }
 
 func (c EchoController) CreateOrder(req CreateOrderRequestModel) (CreateOrderResponseModel, error) {
@@ -51,7 +65,7 @@ func (c EchoController) AddItem(orderID int64, req AddItemRequestModel) (AddItem
 		Price:    req.Price,
 	}
 
-	item, err := c.AddItemUsecase.Execute(item)
+	item, err := c.AddItemUseCase.Execute(item)
 	if err != nil {
 		return AddItemResponseModel{}, err
 	}
@@ -68,7 +82,8 @@ func (controller EchoController) Start() error {
 	root := controller.Echo.Group("/v1")
 	order := root.Group("/order")
 	item := order.Group("/:orderID/item")
-	health := root.Group("/health")
+	liveness := root.Group("/liveness")
+	readiness := root.Group("/readiness")
 
 	order.POST("", func(c echo.Context) error {
 		// bind request body
@@ -119,8 +134,16 @@ func (controller EchoController) Start() error {
 		return c.JSON(http.StatusOK, res)
 	})
 
-	health.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, controller.Health())
+	liveness.GET("", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, controller.Liveness(c.Request().Context()))
+	})
+
+	readiness.GET("", func(c echo.Context) error {
+		hc, err := controller.Readiness(c.Request().Context())
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, HealthResponseModel{Status: "DOWN"})
+		}
+		return c.JSON(http.StatusOK, hc)
 	})
 
 	return controller.Echo.Start(controller.Port)

@@ -1,4 +1,8 @@
-GET http://localhost:8080/v1/health
+GET http://localhost:8080/v1/liveness
+
+###
+
+GET http://localhost:8080/v1/readiness
 
 ###
 
