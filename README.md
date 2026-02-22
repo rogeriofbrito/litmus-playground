@@ -30,14 +30,15 @@ helm upgrade --install cnpg-system \
 source .env
 
 helm upgrade --install cnpg ./helm/cnpg \
--n cnpg \
+-n $ORDER_CLUSTER_NS \
 --create-namespace \
---set users.app.secrets.username=$APP_USER_USERNAME \
---set users.app.secrets.password=$APP_USER_PASSWORD \
---set users.root.secrets.username=$SUPER_USER_USERNAME \
---set users.root.secrets.password=$SUPER_USER_PASSWORD \
---set cluster.bootstrap.initdb.database=$APP_USER_DATABASE \
---set cluster.bootstrap.initdb.owner=$APP_USER_USERNAME
+--set users.app.secrets.username=$ORDER_APP_USERNAME \
+--set users.app.secrets.password=$ORDER_APP_PASSWORD \
+--set users.root.secrets.username=$ORDER_ROOT_USERNAME \
+--set users.root.secrets.password=$ORDER_ROOT_PASSWORD \
+--set cluster.name=$ORDER_CLUSTER_NAME \
+--set cluster.bootstrap.initdb.database=$ORDER_DATABASE_NAME \
+--set cluster.bootstrap.initdb.owner=$ORDER_APP_USERNAME
 ```
 
 ### Install order-api helm chart
@@ -48,11 +49,11 @@ source .env
 helm upgrade --install order-api ./helm/order-api \
 -n order-api \
 --create-namespace \
---set secrets.DATABASE_HOST="$(echo -n "pg-cluster-rw.cnpg.svc.cluster.local" | base64)" \
+--set secrets.DATABASE_HOST="$(echo -n "$ORDER_CLUSTER_NAME-rw.$ORDER_CLUSTER_NS.svc.cluster.local" | base64)" \
 --set secrets.DATABASE_PORT="$(echo -n "5432" | base64)" \
---set secrets.DATABASE_NAME="$(echo -n $APP_USER_DATABASE | base64)" \
---set secrets.DATABASE_USER="$(echo -n $APP_USER_USERNAME | base64)" \
---set secrets.DATABASE_PASSWORD="$(echo -n $APP_USER_PASSWORD | base64)"
+--set secrets.DATABASE_NAME="$(echo -n $ORDER_DATABASE_NAME | base64)" \
+--set secrets.DATABASE_USER="$(echo -n $ORDER_APP_USERNAME | base64)" \
+--set secrets.DATABASE_PASSWORD="$(echo -n $ORDER_APP_PASSWORD | base64)"
 ```
 
 ## Obs
