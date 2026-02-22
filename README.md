@@ -37,10 +37,6 @@ envsubst < ./k8s/pg-cluster/4-pg-cluster.yaml | kubectl apply -f -
 kubectl get -n pg cluster
 ```
 
-### Next
-
-* Add PGBouncer (cnpg kind Pooler)
-
 ### Obs
 
 * When port-forwarding connection to a pg cluster pod, the connection is lost when testing connetion in Dbeaver. To use other functions it works well.
