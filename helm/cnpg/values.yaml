@@ -1,0 +1,20 @@
+users:
+  app:
+    name: app-user
+    secrets:
+      username: ""
+      password: ""
+  root:
+    name: root-user
+    secrets:
+      username: ""
+      password: ""
+cluster:
+  name: pg-cluster
+  instances: 3
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: ""
+      owner: ""
