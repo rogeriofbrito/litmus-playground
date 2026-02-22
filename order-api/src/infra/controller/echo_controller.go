@@ -21,43 +21,44 @@ type EchoController struct {
 	CheckDatabaseUseCase usecase.CheckDatabaseUseCase
 }
 
-func (c EchoController) Liveness(_ context.Context) HealthResponseModel {
+func (ctl EchoController) Liveness(_ context.Context) *HealthResponseModel {
 	log.Info("Handling liveness request")
-	return HealthResponseModel{
+
+	return &HealthResponseModel{
 		Status: "UP",
 	}
 }
 
-func (c EchoController) Readiness(ctx context.Context) (HealthResponseModel, error) {
+func (ctl EchoController) Readiness(ctx context.Context) (*HealthResponseModel, error) {
 	log.Info("Handling readiness request")
 
-	if err := c.CheckDatabaseUseCase.Execute(ctx); err != nil {
-		return HealthResponseModel{}, err
+	if err := ctl.CheckDatabaseUseCase.Execute(ctx); err != nil {
+		return nil, err
 	}
 
-	return HealthResponseModel{
+	return &HealthResponseModel{
 		Status: "UP",
 	}, nil
 }
 
-func (c EchoController) CreateOrder(req CreateOrderRequestModel) (CreateOrderResponseModel, error) {
+func (ctl EchoController) CreateOrder(_ context.Context, req *CreateOrderRequestModel) (*CreateOrderResponseModel, error) {
 	order := domain.OrderDomain{
 		CustomerName: req.CustomerName,
 	}
 
-	order, err := c.CreateOrderUseCase.Execute(order)
+	order, err := ctl.CreateOrderUseCase.Execute(order)
 	if err != nil {
-		return CreateOrderResponseModel{}, err
+		return nil, err
 	}
 
-	return CreateOrderResponseModel{
+	return &CreateOrderResponseModel{
 		OrderID:      order.OrderID,
 		CustomerName: order.CustomerName,
 		OrderDate:    order.OrderDate,
 	}, nil
 }
 
-func (c EchoController) AddItem(orderID int64, req AddItemRequestModel) (AddItemResponseModel, error) {
+func (ctl EchoController) AddItem(_ context.Context, orderID int64, req *AddItemRequestModel) (*AddItemResponseModel, error) {
 	item := domain.ItemDomain{
 		OrderID:  orderID,
 		ItemName: req.ItemName,
@@ -65,12 +66,12 @@ func (c EchoController) AddItem(orderID int64, req AddItemRequestModel) (AddItem
 		Price:    req.Price,
 	}
 
-	item, err := c.AddItemUseCase.Execute(item)
+	item, err := ctl.AddItemUseCase.Execute(item)
 	if err != nil {
-		return AddItemResponseModel{}, err
+		return nil, err
 	}
 
-	return AddItemResponseModel{
+	return &AddItemResponseModel{
 		ItemID:   item.ItemID,
 		ItemName: item.ItemName,
 		Quantity: item.Quantity,
@@ -78,73 +79,70 @@ func (c EchoController) AddItem(orderID int64, req AddItemRequestModel) (AddItem
 	}, nil
 }
 
-func (controller EchoController) Start() error {
-	root := controller.Echo.Group("/v1")
+func (ctl EchoController) Start(_ context.Context) error {
+	root := ctl.Echo.Group("/v1")
 	order := root.Group("/order")
 	item := order.Group("/:orderID/item")
 	liveness := root.Group("/liveness")
 	readiness := root.Group("/readiness")
 
-	order.POST("", func(c echo.Context) error {
-		// bind request body
-		req := CreateOrderRequestModel{}
-		if err := c.Bind(&req); err != nil {
-			return err
-		}
+	order.POST("", ctl.orderPost)
+	item.PUT("", ctl.itemPut)
+	liveness.GET("", ctl.livenessGet)
+	readiness.GET("", ctl.readinessGet)
 
-		// validate request body
-		if err := controller.Validate.Struct(req); err != nil {
-			return err
-		}
+	return ctl.Echo.Start(ctl.Port)
+}
 
-		// evaluate
-		res, err := controller.CreateOrder(req)
-		if err != nil {
-			return err
-		}
+func (ctl EchoController) orderPost(c echo.Context) error {
+	req := &CreateOrderRequestModel{}
+	if err := c.Bind(req); err != nil {
+		return err
+	}
 
-		// response
-		return c.JSON(http.StatusOK, res)
-	})
+	if err := ctl.Validate.Struct(req); err != nil {
+		return err
+	}
 
-	item.PUT("", func(c echo.Context) error {
-		// bind params
-		orderID, err := strconv.ParseInt(c.Param("orderID"), 10, 64)
-		if err != nil {
-			return err
-		}
+	res, err := ctl.CreateOrder(c.Request().Context(), req)
+	if err != nil {
+		return err
+	}
 
-		// bind request body
-		req := AddItemRequestModel{}
-		if err := c.Bind(&req); err != nil {
-			return err
-		}
+	return c.JSON(http.StatusOK, res)
+}
 
-		// validate request body
-		if err := controller.Validate.Struct(req); err != nil {
-			return err
-		}
+func (ctl EchoController) itemPut(c echo.Context) error {
+	orderID, err := strconv.ParseInt(c.Param("orderID"), 10, 64)
+	if err != nil {
+		return err
+	}
 
-		// evaluate
-		res, err := controller.AddItem(orderID, req)
-		if err != nil {
-			return err
-		}
+	req := &AddItemRequestModel{}
+	if err := c.Bind(req); err != nil {
+		return err
+	}
 
-		return c.JSON(http.StatusOK, res)
-	})
+	if err := ctl.Validate.Struct(req); err != nil {
+		return err
+	}
 
-	liveness.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, controller.Liveness(c.Request().Context()))
-	})
+	res, err := ctl.AddItem(c.Request().Context(), orderID, req)
+	if err != nil {
+		return err
+	}
 
-	readiness.GET("", func(c echo.Context) error {
-		hc, err := controller.Readiness(c.Request().Context())
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, HealthResponseModel{Status: "DOWN"})
-		}
-		return c.JSON(http.StatusOK, hc)
-	})
+	return c.JSON(http.StatusOK, res)
+}
 
-	return controller.Echo.Start(controller.Port)
+func (ctl EchoController) livenessGet(c echo.Context) error {
+	return c.JSON(http.StatusOK, ctl.Liveness(c.Request().Context()))
+}
+
+func (ctl EchoController) readinessGet(c echo.Context) error {
+	hc, err := ctl.Readiness(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, HealthResponseModel{Status: "DOWN"})
+	}
+	return c.JSON(http.StatusOK, hc)
 }

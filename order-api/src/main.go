@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -15,6 +16,8 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	pod := infra_database.PostgresOrderDatabase{}
 	pid := infra_database.PostgresItemDatabase{}
 	pr := infra_database.PostgresReadiness{}
@@ -40,7 +43,7 @@ func main() {
 		AddItemUseCase:       ai,
 		CheckDatabaseUseCase: cd,
 	}
-	if err := controller.Start(); err != nil {
+	if err := controller.Start(ctx); err != nil {
 		panic(err)
 	}
 }
