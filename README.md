@@ -54,12 +54,12 @@ https://cloudnative-pg.io/docs/devel/installation_upgrade
 ```bash
 source .env
 
-helm upgrade --install kubernetes-playground ./helm \
--n kubernetes-playground \
+helm upgrade --install order-api ./helm/order-api \
+-n order-api \
 --create-namespace \
---set order-api.secrets.DATABASE_HOST="$(echo -n "pg-cluster-rw.pg.svc.cluster.local" | base64)" \
---set order-api.secrets.DATABASE_PORT="$(echo -n "5432" | base64)" \
---set order-api.secrets.DATABASE_NAME="$(echo -n $APP_USER_DATABASE | base64)" \
---set order-api.secrets.DATABASE_USER="$(echo -n $APP_USER_USERNAME | base64)" \
---set order-api.secrets.DATABASE_PASSWORD="$(echo -n $APP_USER_PASSWORD | base64)"
+--set secrets.DATABASE_HOST="$(echo -n "pg-cluster-rw.pg.svc.cluster.local" | base64)" \
+--set secrets.DATABASE_PORT="$(echo -n "5432" | base64)" \
+--set secrets.DATABASE_NAME="$(echo -n $APP_USER_DATABASE | base64)" \
+--set secrets.DATABASE_USER="$(echo -n $APP_USER_USERNAME | base64)" \
+--set secrets.DATABASE_PASSWORD="$(echo -n $APP_USER_PASSWORD | base64)"
 ```
