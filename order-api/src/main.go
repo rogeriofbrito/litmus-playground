@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -44,19 +45,36 @@ func main() {
 		CheckDatabaseUseCase: cd,
 	}
 	if err := controller.Start(ctx); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 func newEchoClient() *echo.Echo {
 	e := echo.New()
+
 	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Skipper:      middleware.DefaultSkipper,
-		ErrorMessage: "custom timeout error message returns to client",
+		ErrorMessage: "Request timeout",
 		OnTimeoutRouteErrorHandler: func(err error, c echo.Context) {
-			log.Errorf("Request timeout: %s", c.Path())
+			log.Errorf("Timeout for request path %s", c.Path())
 		},
 		Timeout: 30 * time.Second,
 	}))
+
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		code := http.StatusInternalServerError
+		if he, ok := err.(*echo.HTTPError); ok {
+			code = he.Code
+		}
+
+		log.Errorf("Error handled for request path %s: %s", c.Path(), err.Error())
+
+		if !c.Response().Committed {
+			c.JSON(code, map[string]interface{}{
+				"message": http.StatusText(code),
+			})
+		}
+	}
+
 	return e
 }
