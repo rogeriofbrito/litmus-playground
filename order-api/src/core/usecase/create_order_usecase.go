@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"time"
 
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
@@ -11,12 +12,12 @@ type CreateOrderUseCase struct {
 	OrderDatabase external_database.IOrderDatabase
 }
 
-func (uc CreateOrderUseCase) Execute(order domain.OrderDomain) (domain.OrderDomain, error) {
+func (uc CreateOrderUseCase) Execute(ctx context.Context, order *domain.OrderDomain) (*domain.OrderDomain, error) {
 	order.OrderDate = time.Now()
 
-	order, err := uc.OrderDatabase.Save(order)
+	order, err := uc.OrderDatabase.Save(ctx, order)
 	if err != nil {
-		return domain.OrderDomain{}, err
+		return nil, err
 	}
 
 	return order, nil

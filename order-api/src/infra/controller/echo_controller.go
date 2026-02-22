@@ -41,12 +41,12 @@ func (ctl EchoController) Readiness(ctx context.Context) (*HealthResponseModel, 
 	}, nil
 }
 
-func (ctl EchoController) CreateOrder(_ context.Context, req *CreateOrderRequestModel) (*CreateOrderResponseModel, error) {
-	order := domain.OrderDomain{
+func (ctl EchoController) CreateOrder(ctx context.Context, req *CreateOrderRequestModel) (*CreateOrderResponseModel, error) {
+	order := &domain.OrderDomain{
 		CustomerName: req.CustomerName,
 	}
 
-	order, err := ctl.CreateOrderUseCase.Execute(order)
+	order, err := ctl.CreateOrderUseCase.Execute(ctx, order)
 	if err != nil {
 		return nil, err
 	}
@@ -58,15 +58,15 @@ func (ctl EchoController) CreateOrder(_ context.Context, req *CreateOrderRequest
 	}, nil
 }
 
-func (ctl EchoController) AddItem(_ context.Context, orderID int64, req *AddItemRequestModel) (*AddItemResponseModel, error) {
-	item := domain.ItemDomain{
+func (ctl EchoController) AddItem(ctx context.Context, orderID int64, req *AddItemRequestModel) (*AddItemResponseModel, error) {
+	item := &domain.ItemDomain{
 		OrderID:  orderID,
 		ItemName: req.ItemName,
 		Quantity: req.Quantity,
 		Price:    req.Price,
 	}
 
-	item, err := ctl.AddItemUseCase.Execute(item)
+	item, err := ctl.AddItemUseCase.Execute(ctx, item)
 	if err != nil {
 		return nil, err
 	}

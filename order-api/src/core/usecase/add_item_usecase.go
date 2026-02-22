@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
 	core_error "github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/error"
 	external_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/external/database"
@@ -11,19 +13,19 @@ type AddItemUseCase struct {
 	ItemDatabase  external_database.IItemDatabase
 }
 
-func (uc AddItemUseCase) Execute(item domain.ItemDomain) (domain.ItemDomain, error) {
-	countOrder, err := uc.OrderDatabase.Count(item.OrderID)
+func (uc AddItemUseCase) Execute(ctx context.Context, item *domain.ItemDomain) (*domain.ItemDomain, error) {
+	countOrder, err := uc.OrderDatabase.Count(ctx, item.OrderID)
 	if err != nil {
-		return domain.ItemDomain{}, err
+		return nil, err
 	}
 
 	if countOrder == 0 {
-		return domain.ItemDomain{}, core_error.ErrOrderNotFound
+		return nil, core_error.ErrOrderNotFound
 	}
 
-	item, err = uc.ItemDatabase.Save(item)
+	item, err = uc.ItemDatabase.Save(ctx, item)
 	if err != nil {
-		return domain.ItemDomain{}, err
+		return nil, err
 	}
 
 	return item, nil

@@ -1,7 +1,11 @@
 package external_database
 
-import "github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
+import (
+	"context"
+
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
+)
 
 type IItemDatabase interface {
-	Save(item domain.ItemDomain) (domain.ItemDomain, error)
+	Save(ctx context.Context, item *domain.ItemDomain) (*domain.ItemDomain, error)
 }

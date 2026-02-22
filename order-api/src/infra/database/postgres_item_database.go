@@ -10,12 +10,12 @@ import (
 
 type PostgresItemDatabase struct{}
 
-func (d PostgresItemDatabase) Save(item domain.ItemDomain) (domain.ItemDomain, error) {
-	conn, err := pgx.Connect(context.Background(), getConnString())
+func (d PostgresItemDatabase) Save(ctx context.Context, item *domain.ItemDomain) (*domain.ItemDomain, error) {
+	conn, err := pgx.Connect(ctx, getConnString())
 	if err != nil {
-		return domain.ItemDomain{}, err
+		return nil, err
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close(ctx)
 
 	insert := `
 	INSERT INTO public.item(
@@ -35,18 +35,18 @@ func (d PostgresItemDatabase) Save(item domain.ItemDomain) (domain.ItemDomain, e
 		, quantity
 		, price`
 
-	rows, err := conn.Query(context.Background(), insert, item.OrderID, item.ItemName, item.Quantity, item.Price)
+	rows, err := conn.Query(ctx, insert, item.OrderID, item.ItemName, item.Quantity, item.Price)
 	if err != nil {
-		return domain.ItemDomain{}, err
+		return nil, err
 	}
 
 	if rows.Next() {
 		err = rows.Scan(&item.ItemID, &item.OrderID, &item.ItemName, &item.Quantity, &item.Price)
 		if err != nil {
-			return domain.ItemDomain{}, err
+			return nil, err
 		}
 	} else {
-		return domain.ItemDomain{}, infra_error.ErrQueryNotReturnValues
+		return nil, infra_error.ErrQueryNotReturnValues
 	}
 
 	return item, nil
