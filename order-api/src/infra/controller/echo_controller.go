@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
+	"github.com/palantir/stacktrace"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
 	log "github.com/sirupsen/logrus"
@@ -33,7 +34,7 @@ func (ctl EchoController) Readiness(ctx context.Context) (*HealthResponseModel, 
 	log.Info("Handling readiness request")
 
 	if err := ctl.CheckDatabaseUseCase.Execute(ctx); err != nil {
-		return nil, err
+		return nil, stacktrace.Propagate(err, "Failed to execute CheckDatabaseUseCase")
 	}
 
 	return &HealthResponseModel{
@@ -48,7 +49,7 @@ func (ctl EchoController) CreateOrder(ctx context.Context, req *CreateOrderReque
 
 	order, err := ctl.CreateOrderUseCase.Execute(ctx, order)
 	if err != nil {
-		return nil, err
+		return nil, stacktrace.Propagate(err, "Failed to execute CreateOrderUseCase")
 	}
 
 	return &CreateOrderResponseModel{
@@ -68,7 +69,7 @@ func (ctl EchoController) AddItem(ctx context.Context, orderID int64, req *AddIt
 
 	item, err := ctl.AddItemUseCase.Execute(ctx, item)
 	if err != nil {
-		return nil, err
+		return nil, stacktrace.Propagate(err, "Failed to execute AddItemUseCase")
 	}
 
 	return &AddItemResponseModel{
@@ -97,16 +98,16 @@ func (ctl EchoController) Start(_ context.Context) error {
 func (ctl EchoController) orderPost(c echo.Context) error {
 	req := &CreateOrderRequestModel{}
 	if err := c.Bind(req); err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to bind request")
 	}
 
 	if err := ctl.Validate.Struct(req); err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to validate request")
 	}
 
 	res, err := ctl.CreateOrder(c.Request().Context(), req)
 	if err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to handle request")
 	}
 
 	return c.JSON(http.StatusOK, res)
@@ -115,21 +116,21 @@ func (ctl EchoController) orderPost(c echo.Context) error {
 func (ctl EchoController) itemPut(c echo.Context) error {
 	orderID, err := strconv.ParseInt(c.Param("orderID"), 10, 64)
 	if err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to parse orderID")
 	}
 
 	req := &AddItemRequestModel{}
 	if err := c.Bind(req); err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to bind request")
 	}
 
 	if err := ctl.Validate.Struct(req); err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to validate request")
 	}
 
 	res, err := ctl.AddItem(c.Request().Context(), orderID, req)
 	if err != nil {
-		return err
+		return stacktrace.Propagate(err, "Failed to handle request")
 	}
 
 	return c.JSON(http.StatusOK, res)

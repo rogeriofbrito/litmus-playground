@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/palantir/stacktrace"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
 	external_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/external/database"
 )
@@ -17,7 +18,7 @@ func (uc CreateOrderUseCase) Execute(ctx context.Context, order *domain.OrderDom
 
 	order, err := uc.OrderDatabase.Save(ctx, order)
 	if err != nil {
-		return nil, err
+		return nil, stacktrace.Propagate(err, "Failed on call database")
 	}
 
 	return order, nil

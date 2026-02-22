@@ -67,7 +67,7 @@ func newEchoClient() *echo.Echo {
 			code = he.Code
 		}
 
-		log.Errorf("Error handled for request path %s: %s", c.Path(), err.Error())
+		log.Errorf("Failed to handle request at path %s: %s", c.Path(), err.Error())
 
 		if !c.Response().Committed {
 			c.JSON(code, map[string]interface{}{
