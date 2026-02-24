@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
@@ -60,6 +61,8 @@ func newEchoClient() *echo.Echo {
 		},
 		Timeout: 30 * time.Second,
 	}))
+
+	e.Use(echoprometheus.NewMiddleware("orderapi"))
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		code := http.StatusInternalServerError

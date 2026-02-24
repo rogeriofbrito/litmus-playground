@@ -6,6 +6,10 @@ GET http://localhost:8080/v1/readiness
 
 ###
 
+GET http://localhost:8080/v1/metrics
+
+###
+
 POST http://localhost:8080/v1/order
 Content-Type: application/json
 

@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/palantir/stacktrace"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
@@ -86,11 +87,13 @@ func (ctl EchoController) Start(_ context.Context) error {
 	item := order.Group("/:orderID/item")
 	liveness := root.Group("/liveness")
 	readiness := root.Group("/readiness")
+	metrics := root.Group("/metrics")
 
 	order.POST("", ctl.orderPost)
 	item.PUT("", ctl.itemPut)
 	liveness.GET("", ctl.livenessGet)
 	readiness.GET("", ctl.readinessGet)
+	metrics.GET("", echoprometheus.NewHandler())
 
 	return ctl.Echo.Start(ctl.Port)
 }
