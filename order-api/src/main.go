@@ -62,7 +62,7 @@ func newEchoClient() *echo.Echo {
 		Timeout: 30 * time.Second,
 	}))
 
-	e.Use(echoprometheus.NewMiddleware("orderapi"))
+	e.Use(echoprometheus.NewMiddleware("echo"))
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		code := http.StatusInternalServerError
