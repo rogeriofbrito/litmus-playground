@@ -49,11 +49,21 @@ source .env
 helm upgrade --install order-api ./helm/order-api \
 -n order-api \
 --create-namespace \
+--values ./helm-values/order-api.yaml \
 --set secrets.DATABASE_HOST="$(echo -n "$ORDER_CLUSTER_NAME-rw.$ORDER_CLUSTER_NS.svc.cluster.local" | base64)" \
 --set secrets.DATABASE_PORT="$(echo -n "5432" | base64)" \
 --set secrets.DATABASE_NAME="$(echo -n $ORDER_DATABASE_NAME | base64)" \
 --set secrets.DATABASE_USER="$(echo -n $ORDER_APP_USERNAME | base64)" \
 --set secrets.DATABASE_PASSWORD="$(echo -n $ORDER_APP_PASSWORD | base64)"
+```
+
+### Install Prometheus helm chart
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm upgrade --install prometheus prometheus-community/prometheus \
+-n prometheus \
+--create-namespace
 ```
 
 ## Obs

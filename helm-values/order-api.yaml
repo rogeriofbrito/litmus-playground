@@ -1,0 +1,4 @@
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /v1/metrics
+  prometheus.io/port: "8080"
