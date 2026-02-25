@@ -19,9 +19,10 @@ Create a `.env` file at root directory using `.env.template` as template.
 ```bash
 helm repo add cnpg https://cloudnative-pg.github.io/charts
 helm upgrade --install cnpg-system \
-  --namespace cnpg-system \
-  --create-namespace \
-  cnpg/cloudnative-pg
+# TODO: add --version
+--n cnpg-system \
+--create-namespace \
+cnpg/cloudnative-pg
 ```
 
 ### Install cnpg helm chart
@@ -30,6 +31,7 @@ helm upgrade --install cnpg-system \
 source .env
 
 helm upgrade --install cnpg ./helm/cnpg \
+# TODO: add --version
 -n $ORDER_CLUSTER_NS \
 --create-namespace \
 --set users.app.secrets.username=$ORDER_APP_USERNAME \
@@ -48,6 +50,7 @@ source .env
 
 helm upgrade --install order-api ./helm/order-api \
 -n order-api \
+# TODO: add --version
 --create-namespace \
 --values ./helm-values/order-api.yaml \
 --set secrets.DATABASE_HOST="$(echo -n "$ORDER_CLUSTER_NAME-rw.$ORDER_CLUSTER_NS.svc.cluster.local" | base64)" \
@@ -62,8 +65,21 @@ helm upgrade --install order-api ./helm/order-api \
 ```bash
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm upgrade --install prometheus prometheus-community/prometheus \
+# TODO: add --version
 -n prometheus \
 --create-namespace
+```
+
+### Install Grafana helm chart
+
+```bash
+helm repo add grafana https://grafana.github.io/helm-charts
+helm upgrade --install grafana grafana/grafana \
+--version 10.5.15 \
+-n grafana \
+--create-namespace \
+--values ./helm-values/grafana.yaml \
+--set-file dashboards.default.golang-monitoring-dashboard.json=./grafana/dashboards/echo-framework-processes.json
 ```
 
 ## Obs

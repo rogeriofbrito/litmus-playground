@@ -1,0 +1,36 @@
+dashboards:
+  default: 
+    kubernetes-api-server:
+      gnetId: 12006
+      revision: 1
+      datasource: prometheus
+    kubernetes-core-dns:
+      gnetId: 15762
+      revision: 1
+      datasource: prometheus
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      editable: true
+      options:
+        path: /var/lib/grafana/dashboards/default
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: prometheus
+        type: prometheus
+        access: proxy
+        orgId: 1
+        url: http://prometheus-server.prometheus.svc.cluster.local
+        isDefault: true
+        version: 1
+        editable: false
