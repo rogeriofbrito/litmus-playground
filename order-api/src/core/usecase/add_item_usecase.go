@@ -9,13 +9,22 @@ import (
 	external_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/external/database"
 )
 
+func NewAddItemUseCase(
+	od external_database.IOrderDatabase,
+	id external_database.IItemDatabase) *AddItemUseCase {
+	return &AddItemUseCase{
+		od: od,
+		id: id,
+	}
+}
+
 type AddItemUseCase struct {
-	OrderDatabase external_database.IOrderDatabase
-	ItemDatabase  external_database.IItemDatabase
+	od external_database.IOrderDatabase
+	id external_database.IItemDatabase
 }
 
 func (uc AddItemUseCase) Execute(ctx context.Context, item *domain.ItemDomain) (*domain.ItemDomain, error) {
-	countOrder, err := uc.OrderDatabase.Count(ctx, item.OrderID)
+	countOrder, err := uc.od.Count(ctx, item.OrderID)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed on call database")
 	}
@@ -24,7 +33,7 @@ func (uc AddItemUseCase) Execute(ctx context.Context, item *domain.ItemDomain) (
 		return nil, stacktrace.NewErrorWithCode(core_error.EcodeOrderNotFound, "Order not found")
 	}
 
-	item, err = uc.ItemDatabase.Save(ctx, item)
+	item, err = uc.id.Save(ctx, item)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed on call database")
 	}

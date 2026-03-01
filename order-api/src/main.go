@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,36 +16,41 @@ import (
 	infra_controller "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/controller"
 	infra_database "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/database"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
 	ctx := context.Background()
 
-	pod := infra_database.PostgresOrderDatabase{}
-	pid := infra_database.PostgresItemDatabase{}
-	pr := infra_database.PostgresReadiness{}
-
-	co := usecase.CreateOrderUseCase{
-		OrderDatabase: pod,
+	db, err := gorm.Open(postgres.Open(getConnString()), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	ai := usecase.AddItemUseCase{
-		OrderDatabase: pod,
-		ItemDatabase:  pid,
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	cd := usecase.CheckDatabaseUseCase{
-		IReadines: pr,
-	}
+	configureDBPool(sqlDB)
 
-	var controller infra_controller.IController = infra_controller.EchoController{
-		Validate:             validator.New(),
-		Echo:                 newEchoClient(),
-		Port:                 fmt.Sprintf(":%s", os.Getenv("PORT")),
-		CreateOrderUseCase:   co,
-		AddItemUseCase:       ai,
-		CheckDatabaseUseCase: cd,
-	}
+	pod := infra_database.NewPostgresOrderDatabase(db)
+	pid := infra_database.NewPostgresItemDatabase(db)
+	pr := infra_database.NewPostgresReadiness(db)
+	co := usecase.NewCreateOrderUseCase(pod)
+	ai := usecase.NewAddItemUseCase(pod, pid)
+	cd := usecase.NewCheckDatabaseUseCase(pr)
+	var controller infra_controller.IController = infra_controller.NewEchoController(
+		validator.New(),
+		newEchoClient(),
+		fmt.Sprintf(":%s", os.Getenv("PORT")),
+		co,
+		ai,
+		cd,
+		db,
+	)
+
 	if err := controller.Start(ctx); err != nil {
 		log.Fatal(err)
 	}
@@ -80,4 +86,20 @@ func newEchoClient() *echo.Echo {
 	}
 
 	return e
+}
+
+func getConnString() string {
+	return fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
+		os.Getenv("DATABASE_USER"),
+		os.Getenv("DATABASE_PASSWORD"),
+		os.Getenv("DATABASE_HOST"),
+		os.Getenv("DATABASE_PORT"),
+		os.Getenv("DATABASE_NAME"))
+}
+
+func configureDBPool(sqlDB *sql.DB) {
+	sqlDB.SetMaxOpenConns(30)                  //TODO: create env var
+	sqlDB.SetMaxIdleConns(15)                  //TODO: create env var
+	sqlDB.SetConnMaxLifetime(1 * time.Hour)    //TODO: create env var
+	sqlDB.SetConnMaxIdleTime(15 * time.Minute) //TODO: create env var
 }

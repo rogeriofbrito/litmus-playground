@@ -3,18 +3,29 @@ package infra_database
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/palantir/stacktrace"
+	"gorm.io/gorm"
 )
 
-type PostgresReadiness struct{}
+func NewPostgresReadiness(db *gorm.DB) *PostgresReadiness {
+	return &PostgresReadiness{
+		db: db,
+	}
+}
+
+type PostgresReadiness struct {
+	db *gorm.DB
+}
 
 func (r PostgresReadiness) OpenConn(ctx context.Context) error {
-	conn, err := pgx.Connect(ctx, getConnString())
+	sqlDB, err := r.db.DB()
 	if err != nil {
-		return stacktrace.Propagate(err, "Failed to open Postgres connection")
+		return stacktrace.Propagate(err, "Failed to get sql DB")
 	}
-	defer conn.Close(ctx)
+
+	if err := sqlDB.Ping(); err != nil {
+		return stacktrace.Propagate(err, "Failed to ping database")
+	}
 
 	return nil
 }

@@ -3,52 +3,51 @@ package infra_database
 import (
 	"context"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/palantir/stacktrace"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
 	infra_error "github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/error"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/util"
+	"gorm.io/gorm"
 )
 
-type PostgresItemDatabase struct{}
+func NewPostgresItemDatabase(db *gorm.DB) *PostgresItemDatabase {
+	return &PostgresItemDatabase{
+		db: db,
+	}
+}
+
+type PostgresItemDatabase struct {
+	db *gorm.DB
+}
 
 func (d PostgresItemDatabase) Save(ctx context.Context, item *domain.ItemDomain) (*domain.ItemDomain, error) {
-	conn, err := pgx.Connect(ctx, getConnString())
+	tx, err := util.GetTx(ctx, d.db)
 	if err != nil {
-		return nil, stacktrace.Propagate(err, "Failed to open Postgres connection")
+		return nil, stacktrace.Propagate(err, "Failed to get tx from context")
 	}
-	defer conn.Close(ctx)
 
-	insert := `
-	INSERT INTO public.item(
-		  order_id
-		, item_name
-		, quantity
-		, price
-	) VALUES(
-		  $1
-		, $2
-		, $3
-		, $4
-	) returning 
-		  item_id
-		, order_id
-		, item_name
-		, quantity
-		, price`
+	model := ItemModel{
+		OrderID:  item.OrderID,
+		ItemName: item.ItemName,
+		Quantity: item.Quantity,
+		Price:    item.Price,
+	}
 
-	rows, err := conn.Query(ctx, insert, item.OrderID, item.ItemName, item.Quantity, item.Price)
+	result := tx.WithContext(ctx).Table("item").Create(&model)
+	err = result.Error
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed to execute query")
 	}
 
-	if rows.Next() {
-		err = rows.Scan(&item.ItemID, &item.OrderID, &item.ItemName, &item.Quantity, &item.Price)
-		if err != nil {
-			return nil, stacktrace.Propagate(err, "Failed to scan rows")
-		}
-	} else {
+	if result.RowsAffected == 0 {
 		return nil, stacktrace.NewErrorWithCode(infra_error.EcodeQueryNotReturnValues, "Query doesn't return values")
 	}
+
+	item.ItemID = model.ItemID
+	item.OrderID = model.OrderID
+	item.ItemName = model.ItemName
+	item.Quantity = model.Quantity
+	item.Price = model.Price
 
 	return item, nil
 }

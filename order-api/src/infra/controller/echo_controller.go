@@ -11,16 +11,39 @@ import (
 	"github.com/palantir/stacktrace"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/domain"
 	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/core/usecase"
+	"github.com/rogeriofbrito/kubernetes-playground/order-api/src/infra/util"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
+func NewEchoController(
+	v *validator.Validate,
+	echo *echo.Echo,
+	port string,
+	co *usecase.CreateOrderUseCase,
+	ai *usecase.AddItemUseCase,
+	cd *usecase.CheckDatabaseUseCase,
+	db *gorm.DB,
+) *EchoController {
+	return &EchoController{
+		v:    v,
+		echo: echo,
+		port: port,
+		co:   co,
+		ai:   ai,
+		cd:   cd,
+		db:   db,
+	}
+}
+
 type EchoController struct {
-	Validate             *validator.Validate
-	Echo                 *echo.Echo
-	Port                 string
-	CreateOrderUseCase   usecase.CreateOrderUseCase
-	AddItemUseCase       usecase.AddItemUseCase
-	CheckDatabaseUseCase usecase.CheckDatabaseUseCase
+	v    *validator.Validate
+	echo *echo.Echo
+	port string
+	co   *usecase.CreateOrderUseCase
+	ai   *usecase.AddItemUseCase
+	cd   *usecase.CheckDatabaseUseCase
+	db   *gorm.DB
 }
 
 func (ctl EchoController) Liveness(_ context.Context) *HealthResponseModel {
@@ -34,7 +57,7 @@ func (ctl EchoController) Liveness(_ context.Context) *HealthResponseModel {
 func (ctl EchoController) Readiness(ctx context.Context) (*HealthResponseModel, error) {
 	log.Info("Handling readiness request")
 
-	if err := ctl.CheckDatabaseUseCase.Execute(ctx); err != nil {
+	if err := ctl.cd.Execute(ctx); err != nil {
 		return nil, stacktrace.Propagate(err, "Failed to execute CheckDatabaseUseCase")
 	}
 
@@ -48,7 +71,7 @@ func (ctl EchoController) CreateOrder(ctx context.Context, req *CreateOrderReque
 		CustomerName: req.CustomerName,
 	}
 
-	order, err := ctl.CreateOrderUseCase.Execute(ctx, order)
+	order, err := ctl.co.Execute(ctx, order)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed to execute CreateOrderUseCase")
 	}
@@ -68,7 +91,7 @@ func (ctl EchoController) AddItem(ctx context.Context, orderID int64, req *AddIt
 		Price:    req.Price,
 	}
 
-	item, err := ctl.AddItemUseCase.Execute(ctx, item)
+	item, err := ctl.ai.Execute(ctx, item)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed to execute AddItemUseCase")
 	}
@@ -82,7 +105,7 @@ func (ctl EchoController) AddItem(ctx context.Context, orderID int64, req *AddIt
 }
 
 func (ctl EchoController) Start(_ context.Context) error {
-	root := ctl.Echo.Group("/v1")
+	root := ctl.echo.Group("/v1")
 	order := root.Group("/order")
 	item := order.Group("/:orderID/item")
 	liveness := root.Group("/liveness")
@@ -95,48 +118,60 @@ func (ctl EchoController) Start(_ context.Context) error {
 	readiness.GET("", ctl.readinessGet)
 	metrics.GET("", echoprometheus.NewHandler())
 
-	return ctl.Echo.Start(ctl.Port)
+	return ctl.echo.Start(ctl.port)
 }
 
 func (ctl EchoController) orderPost(c echo.Context) error {
-	req := &CreateOrderRequestModel{}
-	if err := c.Bind(req); err != nil {
-		return stacktrace.Propagate(err, "Failed to bind request")
-	}
+	ctx := c.Request().Context()
 
-	if err := ctl.Validate.Struct(req); err != nil {
-		return stacktrace.Propagate(err, "Failed to validate request")
-	}
+	return ctl.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = util.WithTx(ctx, tx)
 
-	res, err := ctl.CreateOrder(c.Request().Context(), req)
-	if err != nil {
-		return stacktrace.Propagate(err, "Failed to handle request")
-	}
+		req := &CreateOrderRequestModel{}
+		if err := c.Bind(req); err != nil {
+			return stacktrace.Propagate(err, "Failed to bind request")
+		}
 
-	return c.JSON(http.StatusOK, res)
+		if err := ctl.v.Struct(req); err != nil {
+			return stacktrace.Propagate(err, "Failed to validate request")
+		}
+
+		res, err := ctl.CreateOrder(ctx, req)
+		if err != nil {
+			return stacktrace.Propagate(err, "Failed to handle request")
+		}
+
+		return c.JSON(http.StatusOK, res)
+	})
 }
 
 func (ctl EchoController) itemPut(c echo.Context) error {
-	orderID, err := strconv.ParseInt(c.Param("orderID"), 10, 64)
-	if err != nil {
-		return stacktrace.Propagate(err, "Failed to parse orderID")
-	}
+	ctx := c.Request().Context()
 
-	req := &AddItemRequestModel{}
-	if err := c.Bind(req); err != nil {
-		return stacktrace.Propagate(err, "Failed to bind request")
-	}
+	return ctl.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = util.WithTx(ctx, tx)
 
-	if err := ctl.Validate.Struct(req); err != nil {
-		return stacktrace.Propagate(err, "Failed to validate request")
-	}
+		orderID, err := strconv.ParseInt(c.Param("orderID"), 10, 64)
+		if err != nil {
+			return stacktrace.Propagate(err, "Failed to parse orderID")
+		}
 
-	res, err := ctl.AddItem(c.Request().Context(), orderID, req)
-	if err != nil {
-		return stacktrace.Propagate(err, "Failed to handle request")
-	}
+		req := &AddItemRequestModel{}
+		if err := c.Bind(req); err != nil {
+			return stacktrace.Propagate(err, "Failed to bind request")
+		}
 
-	return c.JSON(http.StatusOK, res)
+		if err := ctl.v.Struct(req); err != nil {
+			return stacktrace.Propagate(err, "Failed to validate request")
+		}
+
+		res, err := ctl.AddItem(ctx, orderID, req)
+		if err != nil {
+			return stacktrace.Propagate(err, "Failed to handle request")
+		}
+
+		return c.JSON(http.StatusOK, res)
+	})
 }
 
 func (ctl EchoController) livenessGet(c echo.Context) error {
